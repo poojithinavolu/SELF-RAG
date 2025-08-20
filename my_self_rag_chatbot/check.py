@@ -8,7 +8,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 st.set_page_config(page_title="Self RAG Chatbot", page_icon="💬", layout="centered")
-st.title("RAG Chatbot")
+st.title("💬 Self RAG Chatbot")
 
 HF_TOKEN = st.secrets["HF_TOKEN"]
 login(HF_TOKEN)
@@ -25,10 +25,10 @@ def load_embeddings():
     return HuggingFaceEmbeddings(model_name=EMBED_MODEL, model_kwargs={"device": "cpu"})
 
 @st.cache_resource
-def load_faiss(emb):
+def load_faiss(_emb):   # 👈 leading underscore
     return FAISS.load_local(
         folder_path=str(FAISS_DIR),
-        embeddings=emb,
+        embeddings=_emb,
         index_name=INDEX_NAME,
         allow_dangerous_deserialization=True,
     )
