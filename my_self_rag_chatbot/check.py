@@ -42,9 +42,9 @@ def load_model_and_tokenizer():
         LLM_MODEL,
         token=HF_TOKEN,
         torch_dtype=torch.float32,
-        device_map="cpu",
         low_cpu_mem_usage=True,
     )
+    mdl = mdl.to("cpu")   # 👈 Force CPU manually
     mdl.eval()
     return tok, mdl
 
@@ -78,3 +78,4 @@ Answer:
         )
     text = tokenizer.decode(outputs[0], skip_special_tokens=True)
     st.write(text.split("Answer:", 1)[-1].strip())
+
