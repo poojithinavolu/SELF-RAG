@@ -5,7 +5,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 st.set_page_config(page_title="RAG Chatbot", page_icon="💬", layout="centered")
-st.title("💬 Self RAG Chatbot")
+st.title("RAG Chatbot")
 
 HF_TOKEN = st.secrets["HF_TOKEN"]
 
@@ -55,3 +55,4 @@ Answer:"""
     response = client.text_generation(prompt, max_new_tokens=256, temperature=0.2, do_sample=False)
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write(answer)
+
