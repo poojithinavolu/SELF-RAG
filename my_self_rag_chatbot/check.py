@@ -1,5 +1,3 @@
-#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
-
 import torch
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -7,7 +5,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from huggingface_hub import login
 
-HF_TOKEN = st.secrets["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"]
+HF_TOKEN = st.secrets["HF_TOKEN"]
 
 login(HF_TOKEN)
 
@@ -51,3 +49,4 @@ if query:
     outputs = model.generate(**inputs, max_new_tokens=150)
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     st.write(answer.split("Answer:", 1)[-1].strip())
+
