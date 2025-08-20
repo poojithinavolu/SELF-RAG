@@ -27,7 +27,7 @@ model = AutoModelForCausalLM.from_pretrained(
     token=HF_TOKEN
 )
 
-st.title("💬 Self RAG Chatbot")
+st.title("RAG Chatbot")
 
 query = st.text_input("Ask me something:")
 if query:
@@ -49,4 +49,5 @@ if query:
     outputs = model.generate(**inputs, max_new_tokens=150)
     answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     st.write(answer.split("Answer:", 1)[-1].strip())
+
 
