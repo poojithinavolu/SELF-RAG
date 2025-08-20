@@ -14,7 +14,7 @@ FAISS_DIR = APP_DIR / "faiss_index"
 INDEX_NAME = "index"
 
 EMBED_MODEL = "sentence-transformers/sentence-t5-large"
-LLM_MODEL = "meta-llama/Llama-3.2-3b"
+LLM_MODEL = "meta-llama/Llama-3-8b-instruct"
 
 @st.cache_resource
 def load_embeddings():
@@ -55,4 +55,5 @@ Answer:"""
     response = client.text_generation(prompt, max_new_tokens=256, temperature=0.2, do_sample=False)
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write(answer)
+
 
