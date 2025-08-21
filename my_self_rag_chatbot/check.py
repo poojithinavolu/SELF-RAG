@@ -73,16 +73,21 @@ if query:
     context = "\n\n".join(d.page_content for d in docs) if docs else ""
 
     # 2️⃣ Create Prompt
-    prompt = f"""
-Answer the question strictly using only the information from the context below.
-If not enough info, reply exactly: "The context does not provide this information."
+   prompt = f"""
+You are a helpful assistant for a RAG chatbot. 
+Answer the following question **only** using the given context. 
+Do not invent new questions or answers. 
+If the context does not have the answer, reply exactly:
+"The context does not provide this information."
 
 Context:
 {context}
 
 Question: {query}
-Answer:
+
+Final Answer:
 """
+
 
     # 3️⃣ Call Hugging Face Inference
     response = client.text_generation(
@@ -93,21 +98,19 @@ Answer:
         stream=False
     )
 
-    # 4️⃣ Extract Clean Answer
     raw_answer = ""
+if isinstance(response, str):
+    raw_answer = response
+elif isinstance(response, dict) and "generated_text" in response:
+    raw_answer = response["generated_text"]
+elif isinstance(response, list) and "generated_text" in response[0]:
+    raw_answer = response[0]["generated_text"]
 
-    if isinstance(response, list) and len(response) > 0 and "generated_text" in response[0]:
-        raw_answer = response[0]["generated_text"]
-    elif isinstance(response, dict) and "generated_text" in response:
-        raw_answer = response["generated_text"]
-    elif isinstance(response, str):
-        raw_answer = response
-    else:
-        raw_answer = str(response)   # fallback for debugging
+# Only keep what's after "Final Answer:"
+answer = raw_answer.split("Final Answer:", 1)[-1].strip()
 
-    # Just keep answer part after "Answer:"
-    answer = raw_answer.split("Answer:", 1)[-1].strip() or raw_answer.strip()
 
     # 5️⃣ Display
     st.subheader("📌 Answer")
     st.write(answer)
+
