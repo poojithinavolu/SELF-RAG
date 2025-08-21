@@ -18,7 +18,7 @@ INDEX_NAME = "index"
 
 # Models
 EMBED_MODEL = "sentence-transformers/sentence-t5-large"
-LLM_MODEL = "mistralai/Mistral-7B-Instruct-v0.2"   # ✅ your gated-access model
+LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"   # ✅ your gated-access model
 
 # Cache embeddings
 @st.cache_resource
@@ -72,6 +72,7 @@ Answer:"""
     # Extract clean answer
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write(answer)
+
 
 
 
