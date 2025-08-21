@@ -4,40 +4,22 @@ from huggingface_hub import InferenceClient
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-# ==============================
-# 🔧 Streamlit Page Setup
-# ==============================
 st.set_page_config(page_title="RAG Chatbot", page_icon="💬", layout="centered")
 st.title("💬 RAG Chatbot")
 
-# ==============================
-# 🔑 Hugging Face Token
-# ==============================
 HF_TOKEN = st.secrets["HF_TOKEN"]
 
-# ==============================
-# 📂 Paths
-# ==============================
 APP_DIR = Path(__file__).resolve().parent
 FAISS_DIR = APP_DIR / "faiss_index"
 INDEX_NAME = "index"
 
-# ==============================
-# 🤗 Models
-# ==============================
 EMBED_MODEL = "sentence-transformers/sentence-t5-large"
 LLM_MODEL = "google/gemma-2-9b"   # or zephyr-7b-beta, etc.
 
-# ==============================
-# 🧠 Cache Embeddings
-# ==============================
 @st.cache_resource
 def load_embeddings():
     return HuggingFaceEmbeddings(model_name=EMBED_MODEL, model_kwargs={"device": "cpu"})
 
-# ==============================
-# 📊 Cache FAISS
-# ==============================
 @st.cache_resource
 def load_faiss(_emb):
     return FAISS.load_local(
@@ -46,31 +28,18 @@ def load_faiss(_emb):
         index_name=INDEX_NAME,
         allow_dangerous_deserialization=True,
     )
-
-# ==============================
-# 🚀 Hugging Face Client
-# ==============================
 @st.cache_resource
 def get_hf_client():
     return InferenceClient(model=LLM_MODEL, token=HF_TOKEN)
 
-# ==============================
-# ⚡ Load Everything
-# ==============================
 embeddings = load_embeddings()
 db = load_faiss(embeddings)
 retriever = db.as_retriever(search_kwargs={"k": 3})
 client = get_hf_client()
 
-# ==============================
-# 💬 Chat History Init
-# ==============================
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# ==============================
-# 💬 Chat Input
-# ==============================
 query = st.text_input("Ask me something:")
 
 if query:
@@ -116,12 +85,11 @@ Final Answer:
     # 5️⃣ Save into session_state
     st.session_state.chat_history.append({"question": query, "answer": answer})
 
-# ==============================
 # 🖼️ Display Chat History
-# ==============================
 if st.session_state.chat_history:
     st.subheader("📜 Conversation History")
     for i, chat in enumerate(st.session_state.chat_history, 1):
         st.markdown(f"**Q{i}:** {chat['question']}")
         st.markdown(f"**A{i}:** {chat['answer']}")
         st.markdown("---")
+
