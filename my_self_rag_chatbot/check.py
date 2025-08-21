@@ -4,28 +4,40 @@ from huggingface_hub import InferenceClient
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
-# Streamlit page setup
+# ==============================
+# 🔧 Streamlit Page Setup
+# ==============================
 st.set_page_config(page_title="RAG Chatbot", page_icon="💬", layout="centered")
 st.title("💬 RAG Chatbot")
 
-# Hugging Face token (keep in Streamlit secrets, not in code!)
+# ==============================
+# 🔑 Hugging Face Token
+# ==============================
 HF_TOKEN = st.secrets["HF_TOKEN"]
 
-# Paths
+# ==============================
+# 📂 Paths
+# ==============================
 APP_DIR = Path(__file__).resolve().parent
 FAISS_DIR = APP_DIR / "faiss_index"
 INDEX_NAME = "index"
 
-# Models
+# ==============================
+# 🤗 Models
+# ==============================
 EMBED_MODEL = "sentence-transformers/sentence-t5-large"
-LLM_MODEL = "google/gemma-2-9b"   # ✅ your gated-access model
+LLM_MODEL = "google/gemma-2-9b"   # can swap with any supported model <10B
 
-# Cache embeddings
+# ==============================
+# 🧠 Cache Embeddings
+# ==============================
 @st.cache_resource
 def load_embeddings():
     return HuggingFaceEmbeddings(model_name=EMBED_MODEL, model_kwargs={"device": "cpu"})
 
-# Cache FAISS
+# ==============================
+# 📊 Cache FAISS
+# ==============================
 @st.cache_resource
 def load_faiss(_emb):
     return FAISS.load_local(
@@ -35,46 +47,67 @@ def load_faiss(_emb):
         allow_dangerous_deserialization=True,
     )
 
-# Hugging Face inference client
+# ==============================
+# 🚀 Hugging Face Client
+# ==============================
 @st.cache_resource
 def get_hf_client():
-    return InferenceClient(LLM_MODEL, token=HF_TOKEN)
+    return InferenceClient(model=LLM_MODEL, token=HF_TOKEN)
 
-# Load everything
+# ==============================
+# ⚡ Load Everything
+# ==============================
 embeddings = load_embeddings()
 db = load_faiss(embeddings)
 retriever = db.as_retriever(search_kwargs={"k": 3})
 client = get_hf_client()
 
-# Chat input
+# ==============================
+# 💬 Chat Input
+# ==============================
 query = st.text_input("Ask me something:")
+
 if query:
+    # 1️⃣ Retrieve context from FAISS
     docs = retriever.invoke(query)
     context = "\n\n".join(d.page_content for d in docs) if docs else ""
 
-    prompt = f"""Answer the question strictly using only the information from the context below.
-If not enough info, reply: "The context does not provide this information."
+    # 2️⃣ Create Prompt
+    prompt = f"""
+Answer the question strictly using only the information from the context below.
+If not enough info, reply exactly: "The context does not provide this information."
 
 Context:
 {context}
 
 Question: {query}
-Answer:"""
+Answer:
+"""
 
+    # 3️⃣ Call Hugging Face Inference
     response = client.text_generation(
-    prompt,
-    max_new_tokens=256,
-    temperature=0.2,
-    do_sample=False,
-    stream=False   # 👈 force non-streaming response
-)
+        prompt,
+        max_new_tokens=256,
+        temperature=0.2,
+        do_sample=False,
+        stream=False
+    )
 
+    # 4️⃣ Extract Clean Answer
+    raw_answer = ""
 
-    # Extract clean answer
-    st.write(response)
-    answer = response.split("Answer:", 1)[-1].strip() or response.strip()
-    st.write("answer")
+    if isinstance(response, list) and len(response) > 0 and "generated_text" in response[0]:
+        raw_answer = response[0]["generated_text"]
+    elif isinstance(response, dict) and "generated_text" in response:
+        raw_answer = response["generated_text"]
+    elif isinstance(response, str):
+        raw_answer = response
+    else:
+        raw_answer = str(response)   # fallback for debugging
+
+    # Just keep answer part after "Answer:"
+    answer = raw_answer.split("Answer:", 1)[-1].strip() or raw_answer.strip()
+
+    # 5️⃣ Display
+    st.subheader("📌 Answer")
     st.write(answer)
-
-
-
