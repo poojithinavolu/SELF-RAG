@@ -26,7 +26,7 @@ INDEX_NAME = "index"
 # 🤗 Models
 # ==============================
 EMBED_MODEL = "sentence-transformers/sentence-t5-large"
-LLM_MODEL = "google/gemma-2-9b"   # can swap with any supported model <10B
+LLM_MODEL = "google/gemma-2-9b"   # or zephyr-7b-beta, etc.
 
 # ==============================
 # 🧠 Cache Embeddings
@@ -63,6 +63,12 @@ retriever = db.as_retriever(search_kwargs={"k": 3})
 client = get_hf_client()
 
 # ==============================
+# 💬 Chat History Init
+# ==============================
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# ==============================
 # 💬 Chat Input
 # ==============================
 query = st.text_input("Ask me something:")
@@ -76,7 +82,6 @@ if query:
     prompt = f"""
 You are a helpful assistant for a RAG chatbot. 
 Answer the following question **only** using the given context. 
-Do not invent new questions or answers. 
 If the context does not have the answer, reply exactly:
 "The context does not provide this information."
 
@@ -106,9 +111,17 @@ Final Answer:
     elif isinstance(response, list) and "generated_text" in response[0]:
         raw_answer = response[0]["generated_text"]
 
-    # Only keep what's after "Final Answer:"
     answer = raw_answer.split("Final Answer:", 1)[-1].strip()
 
-    # 5️⃣ Display
-    st.subheader("📌 Answer")
-    st.write(answer)
+    # 5️⃣ Save into session_state
+    st.session_state.chat_history.append({"question": query, "answer": answer})
+
+# ==============================
+# 🖼️ Display Chat History
+# ==============================
+if st.session_state.chat_history:
+    st.subheader("📜 Conversation History")
+    for i, chat in enumerate(st.session_state.chat_history, 1):
+        st.markdown(f"**Q{i}:** {chat['question']}")
+        st.markdown(f"**A{i}:** {chat['answer']}")
+        st.markdown("---")
