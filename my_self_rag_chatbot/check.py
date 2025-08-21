@@ -61,8 +61,9 @@ Context:
 Question: {query}
 Answer:"""
 
-    response = client.conversational(
+    response = client.post(
         prompt,
+        task = "conversational",
         max_new_tokens=256,
         temperature=0.2,
         do_sample=False
@@ -71,6 +72,7 @@ Answer:"""
     # Extract clean answer
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write(answer)
+
 
 
 
