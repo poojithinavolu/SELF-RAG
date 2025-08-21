@@ -70,13 +70,5 @@ Answer:"""
 
     # Extract clean answer
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
+    st.write("answer")
     st.write(answer)
-
-
-
-
-
-
-
-
-
