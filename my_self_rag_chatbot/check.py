@@ -69,6 +69,8 @@ Answer:"""
     )
 
     # Extract clean answer
+    st.write(answer)
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write("answer")
     st.write(answer)
+
