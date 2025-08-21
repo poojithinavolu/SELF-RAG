@@ -62,16 +62,19 @@ Question: {query}
 Answer:"""
 
     response = client.text_generation(
-        prompt,
-        max_new_tokens=256,
-        temperature=0.2,
-        do_sample=False
-    )
+    prompt,
+    max_new_tokens=256,
+    temperature=0.2,
+    do_sample=False,
+    stream=False   # 👈 force non-streaming response
+)
+
 
     # Extract clean answer
     st.write(response)
     answer = response.split("Answer:", 1)[-1].strip() or response.strip()
     st.write("answer")
     st.write(answer)
+
 
 
